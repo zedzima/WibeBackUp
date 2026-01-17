@@ -25,11 +25,35 @@ cp WibeBackUp/.claude/scripts/auto-save-session.sh ~/.claude/scripts/
 # 4. Make script executable
 chmod +x ~/.claude/scripts/auto-save-session.sh
 
-# 5. Add hook configuration
-# If you don't have ~/.claude/settings.json, copy the template:
-cp WibeBackUp/.claude/settings.json ~/.claude/settings.json
+# 5. Add hook configuration (see "Merging Hooks" section below)
+```
 
-# If you already have settings.json, merge the hooks section manually
+#### Merging Hooks
+
+**If you don't have `~/.claude/settings.json`:**
+```bash
+cp WibeBackUp/.claude/settings.json ~/.claude/settings.json
+```
+
+**If you already have `settings.json` with other hooks**, add PreCompact to your existing hooks section:
+
+```json
+{
+  "hooks": {
+    "YourExistingHook": [...],
+    "PreCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/scripts/auto-save-session.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
 
 ### Option B: Per-Project Installation
@@ -82,29 +106,6 @@ The `settings.json` file configures the PreCompact hook:
 
 - Global: `~/.claude/scripts/auto-save-session.sh`
 - Per-project: `.claude/scripts/auto-save-session.sh`
-
-### Merging with Existing Settings
-
-If you already have a `settings.json`, add the PreCompact hook to your existing hooks:
-
-```json
-{
-  "hooks": {
-    "YourExistingHook": [...],
-    "PreCompact": [
-      {
-        "matcher": "auto",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/scripts/auto-save-session.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
 
 ## Verification
 
