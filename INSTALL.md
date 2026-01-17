@@ -17,10 +17,10 @@ mkdir -p ~/.claude/skills
 mkdir -p ~/.claude/scripts
 
 # 2. Copy skills
-cp -r WibeBackUp/.claude/skills/* ~/.claude/skills/
+cp -r VibeBackUp/.claude/skills/* ~/.claude/skills/
 
 # 3. Copy auto-save script
-cp WibeBackUp/.claude/scripts/auto-save-session.sh ~/.claude/scripts/
+cp VibeBackUp/.claude/scripts/auto-save-session.sh ~/.claude/scripts/
 
 # 4. Make script executable
 chmod +x ~/.claude/scripts/auto-save-session.sh
@@ -32,7 +32,7 @@ chmod +x ~/.claude/scripts/auto-save-session.sh
 
 **If you don't have `~/.claude/settings.json`:**
 ```bash
-cp WibeBackUp/.claude/settings.json ~/.claude/settings.json
+cp VibeBackUp/.claude/settings.json ~/.claude/settings.json
 ```
 
 **If you already have `settings.json` with other hooks**, add PreCompact to your existing hooks section:
@@ -68,11 +68,11 @@ mkdir -p .claude/skills
 mkdir -p .claude/scripts
 
 # 2. Copy skills
-cp -r /path/to/WibeBackUp/.claude/skills/* .claude/skills/
+cp -r /path/to/VibeBackUp/.claude/skills/* .claude/skills/
 
 # 3. Copy script and settings
-cp /path/to/WibeBackUp/.claude/scripts/auto-save-session.sh .claude/scripts/
-cp /path/to/WibeBackUp/.claude/settings.json .claude/
+cp /path/to/VibeBackUp/.claude/scripts/auto-save-session.sh .claude/scripts/
+cp /path/to/VibeBackUp/.claude/settings.json .claude/
 
 # 4. Make executable
 chmod +x .claude/scripts/auto-save-session.sh
@@ -129,7 +129,7 @@ If skills aren't recognized, ensure:
 Add to your project's `.gitignore`:
 
 ```
-# WibeBackUp session files (contain conversation history)
+# VibeBackUp session files (contain conversation history)
 .claude/sessions/
 ```
 

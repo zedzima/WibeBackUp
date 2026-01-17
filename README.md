@@ -1,10 +1,10 @@
-# WibeBackUp
+# VibeBackUp
 
 Context preservation system for Claude Code. Never lose your conversation history again.
 
 ## What It Does
 
-WibeBackUp provides three skills for Claude Code that help you maintain context across sessions:
+VibeBackUp provides three skills for Claude Code that help you maintain context across sessions:
 
 - **`/save-session`** — Manually save current session state
 - **`/load-session`** — Restore context from a previous session
@@ -56,9 +56,9 @@ See [INSTALL.md](INSTALL.md) for detailed installation instructions.
 
 ```bash
 # 1. Clone or copy to your Claude projects directory
-cp -r WibeBackUp/.claude/skills/* ~/.claude/skills/
-cp -r WibeBackUp/.claude/scripts ~/.claude/
-cp WibeBackUp/.claude/settings.json ~/.claude/
+cp -r VibeBackUp/.claude/skills/* ~/.claude/skills/
+cp -r VibeBackUp/.claude/scripts ~/.claude/
+cp VibeBackUp/.claude/settings.json ~/.claude/
 
 # 2. Make script executable
 chmod +x ~/.claude/scripts/auto-save-session.sh

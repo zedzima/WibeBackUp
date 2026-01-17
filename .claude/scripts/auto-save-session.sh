@@ -1,5 +1,5 @@
 #!/bin/bash
-# WibeBackUp — Auto-save session before compaction
+# VibeBackUp — Auto-save session before compaction
 # Called by PreCompact hook
 # Copies transcript.jsonl entirely for reliable backup
 
@@ -63,7 +63,7 @@ Run \`/load-session\` or read transcript-${NEXT_NUM}.jsonl
 - ${HOME}/.claude/transcript.jsonl
 
 ---
-*Auto-saved by WibeBackUp PreCompact hook*
+*Auto-saved by VibeBackUp PreCompact hook*
 EOF
 
 # Rotate old sessions (keep max 5 of each type)
@@ -71,5 +71,5 @@ cd "${PROJECT_DIR}/.claude/sessions" 2>/dev/null
 ls -1 session-*.md 2>/dev/null | sort -V | head -n -5 | xargs rm -f 2>/dev/null
 ls -1 transcript-*.jsonl 2>/dev/null | sort -V | head -n -5 | xargs rm -f 2>/dev/null
 
-echo "WibeBackUp: Auto-saved to ${SESSION_FILE}"
-[ -f "$TRANSCRIPT_BACKUP" ] && echo "WibeBackUp: Transcript saved to ${TRANSCRIPT_BACKUP}"
+echo "VibeBackUp: Auto-saved to ${SESSION_FILE}"
+[ -f "$TRANSCRIPT_BACKUP" ] && echo "VibeBackUp: Transcript saved to ${TRANSCRIPT_BACKUP}"
