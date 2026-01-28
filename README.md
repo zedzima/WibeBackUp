@@ -1,177 +1,171 @@
 # VibeBackUp
 
-Context preservation system for Claude Code. Never lose your conversation history again.
+Auto-save conversation history before Claude Code context compaction.
 
-## What It Does
+## Problem
 
-VibeBackUp provides three skills for Claude Code that help you maintain context across sessions:
+When Claude's context window fills up, auto-compact summarizes and loses detailed conversation history. After long breaks, there's no way to see what was discussed.
 
-- **`/save-session`** — Manually save current session state
-- **`/load-session`** — Restore context from a previous session
-- **`/init-project`** — Initialize context management for a new project
+## Solution
 
-Plus an automatic backup system that saves your conversation before context compaction.
+VibeBackUp automatically extracts and saves **clean conversation logs** (user questions + assistant responses only) before compaction happens. No tool calls, no thinking blocks, no JSON noise — just readable dialogue.
 
-## How It Works
+## What's Included
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Claude Code Session                   │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│  Context fills up → PreCompact hook triggers            │
-│                           ↓                              │
-│              auto-save-session.sh runs                   │
-│                           ↓                              │
-│         transcript.jsonl copied to backup                │
-│                           ↓                              │
-│              Auto-compaction proceeds                    │
-│                                                          │
-├─────────────────────────────────────────────────────────┤
-│                    New Session                           │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│  User: /load-session                                     │
-│                           ↓                              │
-│  Claude reads transcript backup as extended memory       │
-│                           ↓                              │
-│  Full context available for continuation                 │
-│                                                          │
-└─────────────────────────────────────────────────────────┘
-```
-
-## Features
-
-- **Auto-backup before compaction** — Never lose context unexpectedly
-- **Full transcript preservation** — 100% of conversation history saved
-- **Session rotation** — Keeps last 5 sessions, auto-deletes older ones
-- **Per-project storage** — Each project maintains its own session history
-- **Extended memory** — Claude can reference transcripts without displaying them
-- **Smart project detection** — Works from any directory, auto-finds your projects
-- **Multi-project support** — Choose which project to load/save when multiple found
+| Component | Purpose |
+|-----------|---------|
+| `scripts/auto-save-session.sh` | Auto-backup script (called by PreCompact hook) |
+| `skills/save-session/` | Manual session save with structured summary |
+| `skills/load-session/` | Restore context from previous session |
+| `skills/init-project/` | Initialize project structure |
 
 ## Installation
 
-See [INSTALL.md](INSTALL.md) for detailed installation instructions.
-
-### Quick Start
+### 1. Copy skills to Claude
 
 ```bash
-# 1. Clone or copy to your Claude projects directory
-cp -r VibeBackUp/.claude/skills/* ~/.claude/skills/
-cp -r VibeBackUp/.claude/scripts ~/.claude/
-cp VibeBackUp/.claude/settings.json ~/.claude/
-
-# 2. Make script executable
-chmod +x ~/.claude/scripts/auto-save-session.sh
-
-# 3. Restart Claude Code
-
-# 4. Initialize your project
-cd your-project
-/init-project
+cp -r skills/* ~/.claude/skills/
 ```
+
+### 2. Copy auto-save script
+
+```bash
+mkdir -p ~/.claude/scripts
+cp scripts/auto-save-session.sh ~/.claude/scripts/
+chmod +x ~/.claude/scripts/auto-save-session.sh
+```
+
+### 3. Configure PreCompact hook
+
+Add to `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/scripts/auto-save-session.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+If you already have `settings.json`, merge the `PreCompact` section into your existing `hooks`.
+
+### 4. Restart Claude Code
+
+Skills and hooks are loaded on startup.
 
 ## Usage
 
-### Starting a New Project
+### Automatic (PreCompact)
 
-```
-/init-project
-```
+When context fills up:
+1. PreCompact hook triggers
+2. `auto-save-session.sh` finds the current transcript
+3. Extracts user messages and assistant text responses
+4. Saves to `{project}/.claude/sessions/conversation-XXX.md`
 
-Creates `.claude/` directory with:
-- `SESSION.md` — Current session state template
-- `PLAN.md` — Project plan template
-- `sessions/` — Directory for saved sessions
+### Manual Skills
 
-### Saving Session Manually
-
-```
-/save-session
-```
-
-Use before:
-- Taking a long break
-- Switching to another project
-- When you want a checkpoint
-
-Save to specific project (when not in project directory):
-```
-/save-session /path/to/project
+```bash
+/init-project          # Initialize .claude/ structure in current project
+/save-session          # Save structured session summary (tasks, decisions, next steps)
+/load-session          # Load previous session context
 ```
 
-### Loading Previous Session
+## Output Format
 
-```
-/load-session
-```
+Auto-saved conversations look like this:
 
-Use when:
-- Starting a new session after context was compacted
-- Returning to a project after a break
-- Need to recall what was discussed
+```markdown
+# Session Conversation — 2026-01-28 14:00
 
-**Smart project detection:**
-- If in project directory → loads from that project
-- If not → searches `~/Work*`, `~/Projects`, `~/Dev`, `~/Code`
-- If multiple projects found → prompts you to choose
+## Messages
 
-Load from specific project:
-```
-/load-session /path/to/project
-```
+**User:**
+How do I implement authentication?
 
-Load a specific session:
-```
-/load-session 003
+---
+
+**Assistant:**
+Here's how to implement JWT authentication...
+
+---
+
+*Auto-saved by VibeBackUp PreCompact hook*
 ```
 
-Load specific session from specific project:
-```
-/load-session /path/to/project 003
-```
+## What's Extracted
 
-## Project Structure
+| Included | Excluded |
+|----------|----------|
+| User questions | Tool calls |
+| Assistant visible responses | Tool results (file contents, outputs) |
+| | Thinking/reasoning blocks |
+| | System messages |
+
+## Project Structure After Init
 
 ```
 your-project/
 └── .claude/
-    ├── SESSION.md          # Current session state
-    ├── PLAN.md             # Project plan
+    ├── SESSION.md              # Current session state
+    ├── PLAN.md                 # Project plan
     └── sessions/
-        ├── session-001.md  # Session metadata
-        ├── transcript-001.jsonl  # Full conversation backup
-        ├── session-002.md
-        └── transcript-002.jsonl
+        ├── session-001.md      # Manual save (structured)
+        ├── conversation-001.md # Auto-save (dialogue)
+        └── ...
 ```
 
-## How Auto-Backup Works
+## How It Works
 
-1. Claude Code's context fills up
-2. Before auto-compaction, the `PreCompact` hook triggers
-3. `auto-save-session.sh` copies `transcript.jsonl` to `.claude/sessions/`
-4. Auto-compaction proceeds normally (creates summary)
-5. You now have: summary in context + full backup in file
+1. Claude Code transcripts are stored in `~/.claude/projects/{encoded-path}/*.jsonl`
+2. The script finds the most recent transcript
+3. Parses JSONL and filters:
+   - `type: "user"` + `userType: "external"` → user messages
+   - `type: "assistant"` → `content[].type == "text"` → visible responses
+4. Formats as readable markdown
+5. Saves to current project's `.claude/sessions/`
+6. Rotates old files (keeps last 5)
 
-## Best Practices
+## Gitignore
 
-1. **Use `/save-session` before breaks** — Don't rely only on auto-backup
-2. **Run `/load-session` at session start** — Gives Claude access to history
-3. **Keep SESSION.md updated** — Good for quick context, even without transcript
-4. **Don't commit sessions/** — Add to `.gitignore` (contains conversation history)
+Add to your project's `.gitignore`:
 
-## Limitations
+```
+.claude/sessions/
+```
 
-- Auto-backup saves raw transcript, not structured summary
-- Loading large transcripts uses context space
-- Claude must know what to search for in transcript
-- Works alongside (not replaces) built-in auto-compaction
+Sessions contain conversation history — usually shouldn't be committed.
+
+## Testing
+
+Run manually to verify:
+
+```bash
+cd your-project
+~/.claude/scripts/auto-save-session.sh
+cat .claude/sessions/conversation-001.md
+```
+
+## Requirements
+
+- Claude Code CLI
+- `jq` (for JSON parsing)
+- macOS or Linux
 
 ## License
 
-MIT — Use freely, modify as needed.
+MIT
 
 ## Contributing
 
-Issues and PRs welcome. This is a community tool for Claude Code users.
+Issues and PRs welcome at https://github.com/anthropics/claude-code/issues

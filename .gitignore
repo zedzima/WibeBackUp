@@ -1,0 +1,5 @@
+# Local Claude data
+.claude/
+
+# macOS
+.DS_Store
